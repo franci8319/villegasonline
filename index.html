@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Villegas Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a4a8a;
+      --text: #ffffff;
+      --text-sub: rgba(255,255,255,0.65);
+      --icon-size: 110px;
+      --icon-radius: 25px;
+      --label-size: 13px;
+    }
+
+    html, body {
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                   "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 56px 24px 8px;
+      gap: 0px;
+      text-align: center;
+    }
+
+    .site-logo {
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+    }
+
+    header h1 {
+      font-family: "Pinyon Script", cursive;
+      font-size: 34px;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      color: var(--text);
+    }
+
+    /* ── App Grid ── */
+    main {
+      display: flex;
+      justify-content: center;
+      padding: 40px 24px 80px;
+    }
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, var(--icon-size));
+      gap: 32px 20px;
+      justify-items: center;
+    }
+
+    /* 3 columnas en móvil pequeño */
+    @media (max-width: 520px) {
+      :root { --icon-size: 76px; --icon-radius: 18px; --label-size: 11px; }
+      .apps-grid { grid-template-columns: repeat(3, var(--icon-size)); gap: 28px 16px; }
+    }
+
+    /* 2 columnas en pantallas muy pequeñas */
+    @media (max-width: 320px) {
+      :root { --icon-size: 72px; }
+      .apps-grid { grid-template-columns: repeat(2, var(--icon-size)); }
+    }
+
+    /* ── App Item ── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+      width: var(--icon-size);
+    }
+
+    .app-icon {
+      width: var(--icon-size);
+      height: var(--icon-size);
+      border-radius: var(--icon-radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+
+    .app-icon svg {
+      width: 52%;
+      height: 52%;
+    }
+
+    .app:hover .app-icon  { transform: scale(1.06); }
+    .app:active .app-icon { transform: scale(0.92); opacity: 0.85; }
+
+    .app-name {
+      font-size: var(--label-size);
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.3;
+      color: #ffffff;
+      max-width: 100%;
+      word-break: break-word;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 0 0 32px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="imagen_icono_logo.png" alt="Villegas Online" class="site-logo" />
+    <h1>Online</h1>
+  </header>
+
+  <main>
+    <div class="apps-grid">
+
+      <!--
+        ═══════════════════════════════════════════════
+         AÑADIR APP NUEVA → copia un bloque .app y edita:
+           href    → URL de la app
+           .app-icon style → color de fondo (gradient)
+           svg     → icono (cambia el path)
+           .app-name → nombre que aparece debajo
+        ═══════════════════════════════════════════════
+      -->
+
+      <a class="app" href="https://electricovscombustion.villegasonline.es/" target="_blank" rel="noopener">
+        <div class="app-icon" style="background: linear-gradient(145deg, #1a73e8, #0d47a1);">
+          <!-- Icono rayo / eléctrico -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="white" stroke="white" stroke-width="0.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="app-name">Eléctrico vs Combustión</span>
+      </a>
+
+      <a class="app" href="https://rentabilidad.villegasonline.es/" target="_blank" rel="noopener">
+        <div class="app-icon" style="background: linear-gradient(145deg, #34c759, #248a3d);">
+          <!-- Icono gráfica -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="3,17 8,11 13,14 20,6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="17,6 20,6 20,9" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="app-name">Rentabilidad</span>
+      </a>
+
+      <a class="app" href="https://cunda.villegasonline.es/" target="_blank" rel="noopener">
+        <div class="app-icon" style="background: linear-gradient(145deg, #ff9f0a, #c67b00);">
+          <!-- Icono pata -->
+          <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="12" cy="15" rx="4.5" ry="3.5"/>
+            <ellipse cx="6.5" cy="11" rx="2" ry="2.8"/>
+            <ellipse cx="17.5" cy="11" rx="2" ry="2.8"/>
+            <ellipse cx="9" cy="7.5" rx="1.7" ry="2.2"/>
+            <ellipse cx="15" cy="7.5" rx="1.7" ry="2.2"/>
+          </svg>
+        </div>
+        <span class="app-name">Cunda</span>
+      </a>
+
+      <!-- Nueva app aquí ↓ -->
+
+    </div>
+  </main>
+
+  <footer>© 2026 Villegas Online</footer>
+
+</body>
+</html>
