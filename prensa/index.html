@@ -376,7 +376,8 @@
 
     function abrirVisor(url, nombre) {
       document.getElementById('visor-titulo').textContent = nombre;
-      document.getElementById('visor-frame').src = url;
+      const visorUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
+      document.getElementById('visor-frame').src = visorUrl;
       document.getElementById('visor').classList.add('abierto');
       document.body.style.overflow = 'hidden';
     }
