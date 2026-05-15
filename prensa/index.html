@@ -262,20 +262,12 @@
       return r.json();
     }
 
-    function semanaLabel(folder) {
-      // folder = "2026-20" → calcula rango de fechas de esa semana ISO
-      const [anio, sem] = folder.split('-').map(Number);
-      const ene4 = new Date(anio, 0, 4);
-      const lunes = new Date(ene4);
-      lunes.setDate(ene4.getDate() - ((ene4.getDay() || 7) - 1) + (sem - 1) * 7);
-      const domingo = new Date(lunes);
-      domingo.setDate(lunes.getDate() + 6);
-      const fmt = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
-      return `${fmt.format(lunes)} – ${fmt.format(domingo)}`;
+    function formatFecha(dateStr) {
+      const d = new Date(dateStr + 'T12:00:00');
+      return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' }).format(d);
     }
 
     function nombreLimpio(filename) {
-      // Quita extensión y prefijos de fecha tipo "15-05-26-" o "15-05-26 "
       return filename
         .replace(/\.pdf$/i, '')
         .replace(/^\d{2}-\d{2}-\d{2}[-\s]/, '')
@@ -314,21 +306,15 @@
       return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${carpeta}/${encodeURIComponent(nombre)}`;
     }
 
-    async function mostrarSemana(carpeta) {
+    function mostrarDia(archivos) {
       const grid = document.getElementById('grid');
-      grid.innerHTML = '<div class="state">Cargando...</div>';
-
-      const items = await listar(carpeta);
-      const pdfs  = items.filter(i => i.id && i.name.toLowerCase().endsWith('.pdf'));
-
-      if (!pdfs.length) {
-        grid.innerHTML = '<div class="state">No hay PDFs esta semana.</div>';
+      if (!archivos.length) {
+        grid.innerHTML = '<div class="state">No hay periódicos este día.</div>';
         return;
       }
-
-      grid.innerHTML = pdfs.map(f => {
+      grid.innerHTML = archivos.map(f => {
         const nombre = nombreLimpio(f.name);
-        const url    = urlPdf(carpeta, f.name);
+        const url    = urlPdf(f.folder, f.name);
         return `
         <a class="pdf-card" href="#" onclick="abrirVisor('${url}','${nombre.replace(/'/g,"\\'")}');return false;">
           <div class="pub-logo">${logoHtml(nombre)}</div>
@@ -341,32 +327,51 @@
       const tabsEl = document.getElementById('tabs');
       const grid   = document.getElementById('grid');
 
-      const items    = await listar('');
-      const carpetas = items
-        .filter(i => !i.id)
-        .map(i => i.name)
-        .sort()
-        .reverse();
+      // 1. Obtener todas las carpetas (semanas)
+      const raiz     = await listar('');
+      const carpetas = raiz.filter(i => !i.id).map(i => i.name);
 
       if (!carpetas.length) {
         grid.innerHTML = '<div class="state">Aún no hay periódicos subidos.<br>Vuelve mañana.</div>';
         return;
       }
 
-      tabsEl.innerHTML = carpetas.map((c, i) => `
+      // 2. Obtener todos los archivos de todas las carpetas
+      const todosPdfs = [];
+      for (const c of carpetas) {
+        const items = await listar(c);
+        items.filter(i => i.id && i.name.toLowerCase().endsWith('.pdf'))
+             .forEach(f => todosPdfs.push({ ...f, folder: c }));
+      }
+
+      // 3. Agrupar por fecha de subida (created_at → YYYY-MM-DD)
+      const porFecha = {};
+      todosPdfs.forEach(f => {
+        const fecha = f.created_at ? f.created_at.split('T')[0] : 'desconocido';
+        if (!porFecha[fecha]) porFecha[fecha] = [];
+        porFecha[fecha].push(f);
+      });
+
+      // 4. Ordenar fechas más recientes primero
+      const fechas = Object.keys(porFecha).sort().reverse();
+
+      // 5. Mostrar tabs con fecha legible
+      tabsEl.innerHTML = fechas.map((f, i) => `
         <button class="tab ${i === 0 ? 'active' : ''}"
-                onclick="seleccionar('${c}', this)">
-          ${semanaLabel(c)}
+                onclick="seleccionarDia('${f}', this)">
+          ${formatFecha(f)}
         </button>
       `).join('');
 
-      mostrarSemana(carpetas[0]);
+      // 6. Mostrar el día más reciente
+      window._porFecha = porFecha;
+      mostrarDia(porFecha[fechas[0]]);
     }
 
-    window.seleccionar = (carpeta, btn) => {
+    window.seleccionarDia = (fecha, btn) => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
-      mostrarSemana(carpeta);
+      mostrarDia(window._porFecha[fecha]);
     };
 
     function abrirVisor(url, nombre) {
