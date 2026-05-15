@@ -34,26 +34,17 @@
     header {
       display: flex;
       align-items: center;
+      justify-content: center;
       padding: 52px 20px 24px;
-      gap: 8px;
     }
-
-    .back {
-      display: flex;
-      align-items: center;
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      font-size: 16px;
-      gap: 2px;
-      margin-right: 4px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .back svg { width: 20px; height: 20px; }
 
     header h1 {
       font-family: "Pinyon Script", cursive;
       font-size: 32px;
       font-weight: 400;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: none;
     }
 
     /* ── Week tabs ── */
@@ -233,12 +224,6 @@
 <body>
 
   <header>
-    <a href="/" class="back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
-    </a>
     <h1>Prensa</h1>
   </header>
 
