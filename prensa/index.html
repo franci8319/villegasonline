@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -197,10 +198,25 @@
       justify-content: center;
     }
 
-    #visor-frame {
+    #visor-pages {
       flex: 1;
+      overflow-y: auto;
+      background: #404040;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #visor-pages canvas {
+      display: block;
       width: 100%;
-      border: none;
+      height: auto;
+      margin-bottom: 4px;
+    }
+
+    #visor-progress {
+      text-align: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      padding: 20px;
     }
 
     /* ── Estados ── */
@@ -240,7 +256,7 @@
       <span id="visor-titulo"></span>
       <button id="visor-cerrar" onclick="cerrarVisor()">×</button>
     </div>
-    <iframe id="visor-frame" src=""></iframe>
+    <div id="visor-pages"></div>
   </div>
 
   <script>
@@ -374,17 +390,44 @@
       mostrarDia(window._porFecha[fecha]);
     };
 
-    function abrirVisor(url, nombre) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    async function abrirVisor(url, nombre) {
+      const pages   = document.getElementById('visor-pages');
+      const visor   = document.getElementById('visor');
       document.getElementById('visor-titulo').textContent = nombre;
-      const visorUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
-      document.getElementById('visor-frame').src = visorUrl;
-      document.getElementById('visor').classList.add('abierto');
+      pages.innerHTML = '<div id="visor-progress">Cargando...</div>';
+      visor.classList.add('abierto');
       document.body.style.overflow = 'hidden';
+
+      try {
+        const pdf   = await pdfjsLib.getDocument(url).promise;
+        const total = pdf.numPages;
+        pages.innerHTML = '';
+
+        for (let n = 1; n <= total; n++) {
+          const page     = await pdf.getPage(n);
+          const ancho    = pages.clientWidth;
+          const vp0      = page.getViewport({ scale: 1 });
+          const scale    = (ancho / vp0.width) * (window.devicePixelRatio || 1);
+          const viewport = page.getViewport({ scale });
+
+          const canvas  = document.createElement('canvas');
+          canvas.width  = viewport.width;
+          canvas.height = viewport.height;
+          pages.appendChild(canvas);
+
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        }
+      } catch (e) {
+        pages.innerHTML = '<div id="visor-progress">Error al cargar el PDF.<br>Inténtalo de nuevo.</div>';
+      }
     }
 
     function cerrarVisor() {
       document.getElementById('visor').classList.remove('abierto');
-      document.getElementById('visor-frame').src = '';
+      document.getElementById('visor-pages').innerHTML = '';
       document.body.style.overflow = '';
     }
 
