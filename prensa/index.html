@@ -210,6 +210,34 @@
       padding: 20px;
     }
 
+    /* ── Storage bar ── */
+    .storage-wrap {
+      padding: 0 20px 20px;
+      max-width: 340px;
+      margin: -8px auto 0;
+    }
+
+    .storage-track {
+      height: 5px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .storage-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.6s ease;
+    }
+
+    .storage-label {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+
     /* ── Estados ── */
     .state {
       grid-column: 1 / -1;
@@ -226,6 +254,13 @@
   <header>
     <h1>Prensa</h1>
   </header>
+
+  <div class="storage-wrap">
+    <div class="storage-track">
+      <div class="storage-fill" id="storage-fill" style="width:0%"></div>
+    </div>
+    <div class="storage-label" id="storage-label">Calculando...</div>
+  </div>
 
   <div class="weeks-wrap">
     <div class="weeks-row" id="tabs"></div>
@@ -368,6 +403,17 @@
       // 6. Mostrar el día más reciente
       window._porFecha = porFecha;
       mostrarDia(porFecha[fechas[0]]);
+
+      // 7. Barra de almacenamiento
+      const LIMITE_BYTES = 1_000_000_000; // 1 GB
+      const usadoBytes   = todosPdfs.reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
+      const pct          = Math.min((usadoBytes / LIMITE_BYTES) * 100, 100);
+      const usadoMB      = (usadoBytes / 1_048_576).toFixed(0);
+      const libresMB     = ((LIMITE_BYTES - usadoBytes) / 1_048_576).toFixed(0);
+      const color        = pct < 60 ? '#34c759' : pct < 80 ? '#ff9f0a' : '#ff3b30';
+
+      document.getElementById('storage-fill').style.cssText  = `width:${pct.toFixed(1)}%; background:${color}`;
+      document.getElementById('storage-label').textContent   = `${usadoMB} MB usados · ${libresMB} MB libres de 1 GB`;
     }
 
     window.seleccionarDia = (fecha, btn) => {
