@@ -1,7 +1,6 @@
 import requests
 import re
 import json
-import sys
 from datetime import datetime, timezone
 
 FOTMOB = {
@@ -29,42 +28,36 @@ FOTMOB = {
 
 def get_estado(status_id):
     sid = int(status_id) if str(status_id).isdigit() else 0
-    if sid == 0:
-        return 'proximo'
-    if 1 <= sid <= 5:
-        return 'live'
+    if sid == 0:     return 'proximo'
+    if 1 <= sid <= 5: return 'live'
     return 'finalizado'
 
 def fetch_html():
-    session = requests.Session()
-    headers = {
-        'User-Agent': (
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/124.0.0.0 Safari/537.36'
-        ),
-        'Accept': (
-            'text/html,application/xhtml+xml,application/xml;q=0.9,'
-            'image/avif,image/webp,image/apng,*/*;q=0.8,'
-            'application/signed-exchange;v=b3;q=0.7'
-        ),
-        'Accept-Language':         'es-ES,es;q=0.9,en;q=0.8',
-        'Accept-Encoding':         'gzip, deflate',
-        'Cache-Control':           'max-age=0',
-        'Sec-Ch-Ua':               '"Google Chrome";v="124", "Chromium";v="124", "Not-A.Brand";v="99"',
-        'Sec-Ch-Ua-Mobile':        '?0',
-        'Sec-Ch-Ua-Platform':      '"Windows"',
-        'Sec-Fetch-Dest':          'document',
-        'Sec-Fetch-Mode':          'navigate',
-        'Sec-Fetch-Site':          'none',
-        'Sec-Fetch-User':          '?1',
-        'Upgrade-Insecure-Requests': '1',
-    }
-    r = session.get('https://es.besoccer.com/', headers=headers, timeout=30)
-    print(f'Status HTTP: {r.status_code}')
-    print(f'Bytes recibidos: {len(r.content)}')
-    r.raise_for_status()
-    return r.text
+    # Jina AI Reader — accede como navegador real, bypasa el bloqueo 406
+    r = requests.get(
+        'https://r.jina.ai/https://es.besoccer.com/',
+        headers={
+            'Accept':          'application/json',
+            'X-Return-Format': 'html',
+            'Authorization':   'Bearer jina_free',
+        },
+        timeout=60,
+    )
+    print(f'Jina status: {r.status_code} — bytes: {len(r.content)}')
+
+    if r.status_code == 200:
+        try:
+            data = r.json()
+            html = data.get('data', {}).get('content', '') or data.get('data', {}).get('html', '')
+            if html:
+                print('HTML obtenido via JSON de Jina')
+                return html
+        except Exception:
+            pass
+        print('Usando respuesta directa de Jina')
+        return r.text
+
+    raise RuntimeError(f'Jina devolvió {r.status_code}')
 
 def extract_matches(html):
     competiciones = []
@@ -79,12 +72,10 @@ def extract_matches(html):
         inicio = m.end() - 1
         depth, i = 0, inicio
         while i < len(html):
-            if html[i] == '[':
-                depth += 1
+            if html[i] == '[':   depth += 1
             elif html[i] == ']':
                 depth -= 1
-                if depth == 0:
-                    break
+                if depth == 0: break
             i += 1
 
         try:
@@ -122,7 +113,6 @@ def extract_matches(html):
                 'statusId':       int(sid) if sid.isdigit() else 0,
                 'estado':         get_estado(sid),
                 'minuto':         str(p.get('lmin', '')),
-                'canales':        [c['name'] for c in p.get('tv', [])],
             })
 
         if partidos:
@@ -136,21 +126,18 @@ def extract_matches(html):
     return competiciones
 
 def main():
-    print('Descargando BeSoccer...')
+    print('Obteniendo BeSoccer via Jina AI...')
     html = fetch_html()
+    print(f'popupAlertFav encontrados: {html.count("popupAlertFav")}')
 
-    print('Buscando partidos...')
     competiciones = extract_matches(html)
 
     if not competiciones:
-        # Mostrar fragmento del HTML para diagnóstico
-        print('AVISO: no se encontraron competiciones.')
-        snippet = html[:2000].replace('\n', ' ')
-        print(f'Inicio del HTML: {snippet}')
-        # No falla — escribe JSON vacío para no romper la web
-    else:
-        total = sum(len(c['partidos']) for c in competiciones)
-        print(f'Total: {len(competiciones)} competiciones, {total} partidos')
+        print('AVISO: sin competiciones. Primeras 500 chars:')
+        print(html[:500])
+
+    total = sum(len(c['partidos']) for c in competiciones)
+    print(f'Total: {len(competiciones)} competiciones, {total} partidos')
 
     out = {
         'actualizado': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
