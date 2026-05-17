@@ -391,11 +391,22 @@
 
     async function cargar() {
       try {
-        const r = await fetch(`https://${API_HOST}/api/Events`, {
-          headers: { 'x-rapidapi-key': API_KEY, 'x-rapidapi-host': API_HOST }
-        });
-        const data = await r.json();
-        if (!Array.isArray(data)) throw new Error('bad response');
+        const hoyCache = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Madrid' });
+        const cache    = JSON.parse(localStorage.getItem('futbol_cache') || 'null');
+        let data;
+
+        if (cache && cache.fecha === hoyCache && Array.isArray(cache.eventos)) {
+          data = cache.eventos;
+          document.getElementById('refresh-info').textContent = 'Datos del día en caché';
+        } else {
+          const r = await fetch(`https://${API_HOST}/api/Events`, {
+            headers: { 'x-rapidapi-key': API_KEY, 'x-rapidapi-host': API_HOST }
+          });
+          data = await r.json();
+          if (!Array.isArray(data)) throw new Error('bad response');
+          localStorage.setItem('futbol_cache', JSON.stringify({ fecha: hoyCache, eventos: data }));
+        }
+
         _eventos = data;
 
         // Fechas únicas ordenadas
