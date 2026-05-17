@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"e:/ANTIGRAVITY/villegasonline\" status)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git reset *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git config *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "PowerShell(& \"e:\\\\ANTIGRAVITY\\\\scripts\\\\upload-prensa.ps1\")",
+      "PowerShell(Copy-Item \"e:\\\\ANTIGRAVITY\\\\scripts\\\\publicaciones.txt\" -Destination \"C:\\\\Users\\\\Villegas\\\\Documents\\\\Scripts\\\\publicaciones.txt\" -Force)",
+      "PowerShell(Copy-Item \"e:\\\\ANTIGRAVITY\\\\scripts\\\\upload-prensa.ps1\" -Destination \"C:\\\\Users\\\\Villegas\\\\Documents\\\\Scripts\\\\upload-prensa.ps1\" -Force)",
+      "Bash(curl --silent --request GET --url https://wosti-futbol-tv-spain.p.rapidapi.com/api/Events --header 'Content-Type: application/json' --header 'x-rapidapi-host: wosti-futbol-tv-spain.p.rapidapi.com' --header 'x-rapidapi-key: 377f6b2cdamsh3512a63c8914e18p1d56a8jsn5d27e0e9aede')",
+      "Bash(curl --silent --request GET \"https://v3.football.api-sports.io/fixtures?date=2026-05-17\" --header \"x-apisports-key: 8ba9597eac157b648940bdae728644ee\")",
+      "WebFetch(domain:es.besoccer.com)",
+      "Bash(curl --silent --compressed -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://es.besoccer.com/\")",
+      "Bash(curl --silent --request POST --url https://ai-web-scraper1.p.rapidapi.com/ --header 'Content-Type: application/json' --header 'x-rapidapi-host: ai-web-scraper1.p.rapidapi.com' --header 'x-rapidapi-key: 377f6b2cdamsh3512a63c8914e18p1d56a8jsn5d27e0e9aede' --data '{\"url\":\"https://es.besoccer.com/\",\"summary\":false}')",
+      "Bash(curl --silent --head \"https://es.besoccer.com/\")",
+      "Bash(curl --silent --head -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36\" \"https://es.besoccer.com/\")",
+      "Bash(curl --silent \"https://r.jina.ai/https://es.besoccer.com/\")",
+      "Bash(git commit *)",
+      "WebFetch(domain:www.livesoccertv.com)",
+      "WebFetch(domain:r.jina.ai)",
+      "Bash(git rm *)",
+      "Bash(git rebase *)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
+    ],
+    "additionalDirectories": [
+      "e:\\ANTIGRAVITY",
+      "C:\\Users\\Villegas\\Documents\\Scripts"
+    ]
+  }
+}
