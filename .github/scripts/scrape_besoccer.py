@@ -115,7 +115,14 @@ def extract_matches(html):
 def main():
     print('Obteniendo BeSoccer via Jina AI...')
     html = fetch_html()
-    print(f'popupAlertFav encontrados: {html.count("popupAlertFav")}')
+    n = html.count('popupAlertFav')
+    print(f'popupAlertFav encontrados: {n}')
+
+    # Debug: mostrar contexto alrededor del primer popupAlertFav
+    pos = html.find('popupAlertFav')
+    if pos >= 0:
+        snippet = html[max(0, pos - 20):pos + 300]
+        print(f'Contexto:\n{repr(snippet)}')
 
     competiciones = extract_matches(html)
 
