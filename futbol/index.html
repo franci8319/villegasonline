@@ -11,14 +11,12 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #1a4a8a;
-      --surface:   rgba(255,255,255,0.10);
-      --surface2:  rgba(255,255,255,0.06);
-      --text:      #ffffff;
-      --text-sub:  rgba(255,255,255,0.55);
-      --live:      #ff3b30;
-      --live-bg:   rgba(255,59,48,0.18);
-      --green:     #34c759;
+      --bg:       #1a4a8a;
+      --surface:  rgba(255,255,255,0.10);
+      --text:     #ffffff;
+      --text-sub: rgba(255,255,255,0.55);
+      --live:     #ff3b30;
+      --live-bg:  rgba(255,59,48,0.18);
     }
 
     html, body {
@@ -29,7 +27,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Header ── */
     header {
       text-align: center;
       padding: 52px 20px 4px;
@@ -43,29 +40,26 @@
       font-weight: 400;
     }
 
-    /* ── Fecha ── */
-    .fecha {
+    .refresh-info {
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-sub);
-      letter-spacing: 0.5px;
-      padding: 6px 0 16px;
-      text-transform: uppercase;
+      padding: 4px 0 0;
     }
 
-    /* ── Filtros ── */
-    .filtros-wrap {
+    /* ── Tabs de fecha ── */
+    .tabs-wrap {
       overflow-x: auto;
       scrollbar-width: none;
-      padding: 0 16px 16px;
+      padding: 14px 16px 14px;
     }
-    .filtros-wrap::-webkit-scrollbar { display: none; }
-    .filtros-row {
+    .tabs-wrap::-webkit-scrollbar { display: none; }
+    .tabs-row {
       display: flex;
       gap: 8px;
       width: max-content;
     }
-    .filtro {
+    .tab {
       padding: 6px 16px;
       border-radius: 20px;
       background: var(--surface);
@@ -78,18 +72,7 @@
       -webkit-tap-highlight-color: transparent;
       white-space: nowrap;
     }
-    .filtro.active { background: rgba(255,255,255,0.9); color: var(--bg); font-weight: 600; }
-    .filtro .badge {
-      display: inline-block;
-      background: var(--live);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      border-radius: 8px;
-      padding: 1px 5px;
-      margin-left: 4px;
-      vertical-align: middle;
-    }
+    .tab.active { background: rgba(255,255,255,0.9); color: var(--bg); font-weight: 600; }
 
     /* ── Contenido ── */
     .contenido {
@@ -124,8 +107,13 @@
     .partido {
       background: var(--surface);
       border-radius: 12px;
-      padding: 12px 14px;
+      padding: 10px 14px 10px;
       margin-bottom: 4px;
+      transition: opacity 0.2s;
+    }
+    .partido.pasado { opacity: 0.45; }
+
+    .partido-fila {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
@@ -135,19 +123,27 @@
     .equipo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       min-width: 0;
     }
     .equipo.away { flex-direction: row-reverse; }
 
-    .equipo img {
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
+    .equipo-ini {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
       flex-shrink: 0;
+      color: #fff;
     }
+
     .equipo-nombre {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
@@ -155,29 +151,28 @@
     }
     .equipo.away .equipo-nombre { text-align: right; }
 
-    /* ── Centro (marcador / hora) ── */
     .centro {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 3px;
       flex-shrink: 0;
-      min-width: 72px;
-    }
-
-    .marcador {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 1px;
+      min-width: 70px;
     }
 
     .hora {
       font-size: 16px;
-      font-weight: 600;
-      color: var(--text-sub);
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
 
-    .estado-live {
+    .vs-sep {
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 500;
+    }
+
+    .live-badge {
       font-size: 10px;
       font-weight: 700;
       color: var(--live);
@@ -188,15 +183,28 @@
       animation: pulso 1.5s infinite;
     }
 
-    .estado-ft {
-      font-size: 10px;
-      color: var(--text-sub);
-      letter-spacing: 0.5px;
-    }
-
     @keyframes pulso {
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.4; }
+    }
+
+    /* ── Canales ── */
+    .canales {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .canal-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 8px;
+      color: #fff;
+      white-space: nowrap;
     }
 
     /* ── Estado vacío / carga ── */
@@ -207,181 +215,223 @@
       font-size: 15px;
       line-height: 1.6;
     }
-
-    /* ── Auto-refresh indicator ── */
-    .refresh-info {
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-sub);
-      padding-bottom: 8px;
-    }
   </style>
 </head>
 <body>
 
   <header><h1>Fútbol</h1></header>
-  <div class="fecha" id="fecha"></div>
+  <div class="refresh-info" id="refresh-info"></div>
 
-  <div class="filtros-wrap">
-    <div class="filtros-row">
-      <button class="filtro active" onclick="setFiltro('todos',this)">Todos</button>
-      <button class="filtro" onclick="setFiltro('live',this)">En juego <span class="badge" id="badge-live" style="display:none">0</span></button>
-      <button class="filtro" onclick="setFiltro('proximos',this)">Próximos</button>
-      <button class="filtro" onclick="setFiltro('finalizados',this)">Finalizados</button>
-    </div>
+  <div class="tabs-wrap">
+    <div class="tabs-row" id="tabs"></div>
   </div>
 
-  <div class="refresh-info" id="refresh-info"></div>
-  <div class="contenido" id="contenido"><div class="estado">Cargando...</div></div>
+  <div class="contenido" id="contenido">
+    <div class="estado">Cargando...</div>
+  </div>
 
   <script>
     const API_KEY  = '377f6b2cdamsh3512a63c8914e18p1d56a8jsn5d27e0e9aede';
-    const API_HOST = 'free-api-live-football-data.p.rapidapi.com';
+    const API_HOST = 'wosti-futbol-tv-spain.p.rapidapi.com';
 
-    // ── IDs de ligas a mostrar (filtro para no mostrar ligas irrelevantes)
-    const LIGAS_MOSTRAR = new Set([87,42,73,47,54,55,53,77,138,132,62,52,218,271,108,203]);
-
-    const LIGAS_NOMBRE = {
-      87:'LaLiga', 42:'Champions League', 73:'Europa League', 47:'Premier League',
-      54:'Bundesliga', 55:'Serie A', 53:'Ligue 1', 77:'Mundial', 138:'Copa del Rey',
-      132:'FA Cup', 62:'Liga Portugal', 52:'Eredivisie', 218:'Liga MX', 271:'Superliga',
-      108:'J-League', 203:'Super Lig'
+    // Fotmob league IDs para logos
+    const COMP_FOTMOB = {
+      'premier league':          47,
+      'laliga':                  87,
+      'la liga':                 87,
+      'champions league':        42,
+      'uefa champions league':   42,
+      'europa league':           73,
+      'uefa europa league':      73,
+      'conference league':       155,
+      'bundesliga':              54,
+      'serie a':                 55,
+      'ligue 1':                 53,
+      'copa del rey':            138,
+      'fa cup':                  132,
+      'copa america':            77,
+      'mundial':                 77,
     };
 
-    // statusId → tipo
-    function tipoPartido(m) {
-      const s = m.statusId;
-      if ([6,7,11,12].includes(s)) return 'finalizado';
-      if ([2,3,4,5,8,9,10].includes(s)) return 'live';
-      return 'proximo';
+    function logoLiga(nombre) {
+      const id = COMP_FOTMOB[nombre.toLowerCase()];
+      return id ? `https://images.fotmob.com/image_resources/logo/leaguelogo/dark/${id}.png` : null;
     }
 
-    function horaLocal(utcStr) {
+    function madridDate(utcStr) {
+      return new Date(utcStr).toLocaleDateString('sv', { timeZone: 'Europe/Madrid' });
+    }
+
+    function madridHora(utcStr) {
       return new Date(utcStr).toLocaleTimeString('es', {
         timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
       });
     }
 
-    function logoLiga(id)  { return `https://images.fotmob.com/image_resources/logo/leaguelogo/dark/${id}.png`; }
-    function logoEquipo(id){ return `https://images.fotmob.com/image_resources/logo/teamlogo/${id}.png`; }
-
-    function estadoHtml(m, tipo) {
-      if (tipo === 'live') {
-        const min = m.status?.liveTime?.short || '?\'';
-        return `<span class="estado-live">${min}</span>`;
-      }
-      if (tipo === 'finalizado') return `<span class="estado-ft">FT</span>`;
-      return '';
+    function estadoPartido(utcStr) {
+      const diff = Date.now() - new Date(utcStr).getTime();
+      if (diff < -5 * 60 * 1000)    return 'proximo';
+      if (diff < 130 * 60 * 1000)   return 'live';
+      return 'pasado';
     }
 
-    function centroHtml(m, tipo) {
-      if (tipo === 'proximo') {
-        return `<span class="hora">${horaLocal(m.status.utcTime)}</span>`;
-      }
-      return `<span class="marcador">${m.home.score ?? 0} - ${m.away.score ?? 0}</span>
-              ${estadoHtml(m, tipo)}`;
+    function colorCanal(nombre) {
+      const n = nombre.toLowerCase();
+      if (n.includes('dazn'))                       return '#0a5a8a';
+      if (n.includes('movistar'))                   return '#004f9f';
+      if (n.includes('laliga') || n.includes('la liga')) return '#c07000';
+      if (n.includes('bein'))                       return '#7b0000';
+      if (n.includes('eurosport'))                  return '#003da5';
+      if (n.includes('la 1') || n.includes('tve')) return '#a5000a';
+      if (n.includes('orange'))                     return '#b54000';
+      if (n.includes('gol'))                        return '#005010';
+      if (n.includes('sky'))                        return '#005ca9';
+      return 'rgba(255,255,255,0.18)';
+    }
+
+    function limpiarNombre(name) {
+      return name
+        .replace(/\s*\(Ver en directo\)/gi, '')
+        .replace(/\s*\([MmOo]\d+[^)]*\)/g, '')
+        .replace(/\s*\(\d+\)/g, '')
+        .replace(/\s*:\s*VER PARTIDO/gi, '')
+        .replace(/LALIGA TV Hypermotion/i, 'LaLiga TV Hyp.')
+        .replace(/Movistar Plus\+/i, 'Movistar+')
+        .trim();
+    }
+
+    function limpiarCanales(channels) {
+      const vistos = new Set();
+      return channels
+        .filter(c => !c.Name.toLowerCase().includes(' bar'))
+        .map(c => ({ nombre: limpiarNombre(c.Name) }))
+        .filter(c => {
+          if (vistos.has(c.nombre)) return false;
+          vistos.add(c.nombre);
+          return true;
+        });
+    }
+
+    function iniciales(name) {
+      return name.split(/[\s.]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
     }
 
     function partidoHtml(m) {
-      const tipo = tipoPartido(m);
+      const estado  = estadoPartido(m.Date);
+      const hora    = madridHora(m.Date);
+      const canales = limpiarCanales(m.Channels);
+
+      const centroHtml = estado === 'live'
+        ? `<span class="live-badge">EN DIRECTO</span>`
+        : `<span class="hora">${hora}</span><span class="vs-sep">vs</span>`;
+
+      const canalesHtml = canales.length
+        ? `<div class="canales">${canales.map(c =>
+            `<span class="canal-chip" style="background:${colorCanal(c.nombre)}">${c.nombre}</span>`
+          ).join('')}</div>`
+        : '';
+
       return `
-        <div class="partido" data-tipo="${tipo}">
-          <div class="equipo home">
-            <img src="${logoEquipo(m.home.id)}" onerror="this.style.display='none'" loading="lazy">
-            <span class="equipo-nombre">${m.home.name}</span>
+        <div class="partido ${estado === 'pasado' ? 'pasado' : ''}">
+          <div class="partido-fila">
+            <div class="equipo home">
+              <div class="equipo-ini">${iniciales(m.LocalTeam.Name)}</div>
+              <span class="equipo-nombre">${m.LocalTeam.Name}</span>
+            </div>
+            <div class="centro">${centroHtml}</div>
+            <div class="equipo away">
+              <div class="equipo-ini">${iniciales(m.AwayTeam.Name)}</div>
+              <span class="equipo-nombre">${m.AwayTeam.Name}</span>
+            </div>
           </div>
-          <div class="centro">${centroHtml(m, tipo)}</div>
-          <div class="equipo away">
-            <img src="${logoEquipo(m.away.id)}" onerror="this.style.display='none'" loading="lazy">
-            <span class="equipo-nombre">${m.away.name}</span>
-          </div>
+          ${canalesHtml}
         </div>`;
     }
 
-    let _filtroActivo = 'todos';
-    let _partidos = [];
+    let _eventos = [];
 
-    function setFiltro(f, btn) {
-      _filtroActivo = f;
-      document.querySelectorAll('.filtro').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderPartidos();
-    }
-    window.setFiltro = setFiltro;
-
-    function renderPartidos() {
-      const cont = document.getElementById('contenido');
-      const partidos = _filtroActivo === 'todos'  ? _partidos
-                     : _filtroActivo === 'live'   ? _partidos.filter(m => tipoPartido(m) === 'live')
-                     : _filtroActivo === 'proximos'   ? _partidos.filter(m => tipoPartido(m) === 'proximo')
-                     : _partidos.filter(m => tipoPartido(m) === 'finalizado');
+    function renderFecha(fecha) {
+      const cont     = document.getElementById('contenido');
+      const partidos = _eventos.filter(m => madridDate(m.Date) === fecha);
 
       if (!partidos.length) {
-        cont.innerHTML = '<div class="estado">No hay partidos en este filtro.</div>';
+        cont.innerHTML = '<div class="estado">No hay partidos este día.</div>';
         return;
       }
 
-      // Agrupar por liga
-      const porLiga = {};
+      // Agrupar por competición
+      const porComp = {};
       partidos.forEach(m => {
-        if (!LIGAS_MOSTRAR.has(m.leagueId)) return;
-        if (!porLiga[m.leagueId]) porLiga[m.leagueId] = [];
-        porLiga[m.leagueId].push(m);
+        const k = m.Competition.Name;
+        if (!porComp[k]) porComp[k] = { nombre: k, lista: [] };
+        porComp[k].lista.push(m);
       });
 
-      if (!Object.keys(porLiga).length) {
-        cont.innerHTML = '<div class="estado">No hay partidos en este filtro.</div>';
-        return;
-      }
+      // Ordenar cada grupo por hora
+      Object.values(porComp).forEach(g => g.lista.sort((a, b) => new Date(a.Date) - new Date(b.Date)));
 
-      cont.innerHTML = Object.entries(porLiga).map(([ligaId, ms]) => `
-        <div class="liga-section">
-          <div class="liga-header">
-            <img src="${logoLiga(ligaId)}" onerror="this.style.display='none'" loading="lazy">
-            <span>${LIGAS_NOMBRE[ligaId] || 'Otra liga'}</span>
-          </div>
-          ${ms.map(partidoHtml).join('')}
-        </div>
-      `).join('');
+      cont.innerHTML = Object.values(porComp).map(g => {
+        const logo    = logoLiga(g.nombre);
+        const logoTag = logo
+          ? `<img src="${logo}" onerror="this.style.display='none'" loading="lazy">`
+          : '';
+        return `
+          <div class="liga-section">
+            <div class="liga-header">${logoTag}<span>${g.nombre}</span></div>
+            ${g.lista.map(partidoHtml).join('')}
+          </div>`;
+      }).join('');
     }
+
+    window.seleccionarFecha = (fecha, btn) => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderFecha(fecha);
+    };
 
     async function cargar() {
-      const today = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Madrid' }).replace(/-/g,'');
       try {
-        const r = await fetch(
-          `https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${today}`,
-          { headers: { 'x-rapidapi-key': API_KEY, 'x-rapidapi-host': API_HOST } }
-        );
+        const r = await fetch(`https://${API_HOST}/api/Events`, {
+          headers: { 'x-rapidapi-key': API_KEY, 'x-rapidapi-host': API_HOST }
+        });
         const data = await r.json();
-        _partidos = (data.response?.matches || []).filter(m => LIGAS_MOSTRAR.has(m.leagueId));
+        if (!Array.isArray(data)) throw new Error('bad response');
+        _eventos = data;
 
-        // Badge live
-        const nLive = _partidos.filter(m => tipoPartido(m) === 'live').length;
-        const badge = document.getElementById('badge-live');
-        badge.textContent = nLive;
-        badge.style.display = nLive ? 'inline-block' : 'none';
+        // Fechas únicas ordenadas
+        const hoy    = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Madrid' });
+        const fechas = [...new Set(_eventos.map(m => madridDate(m.Date)))].sort();
 
-        renderPartidos();
+        // Construir tabs
+        const tabsEl = document.getElementById('tabs');
+        tabsEl.innerHTML = fechas.map(f => {
+          let label;
+          const diff = Math.round((new Date(f) - new Date(hoy)) / 86400000);
+          if (f === hoy)    label = 'Hoy';
+          else if (diff === 1) label = 'Mañana';
+          else label = new Date(f + 'T12:00:00').toLocaleDateString('es', { day: 'numeric', month: 'short' });
+          return `<button class="tab" onclick="seleccionarFecha('${f}',this)">${label}</button>`;
+        }).join('');
 
-        // Próxima actualización
-        const ahora = new Date().toLocaleTimeString('es', { timeZone:'Europe/Madrid', hour:'2-digit', minute:'2-digit' });
-        document.getElementById('refresh-info').textContent = `Actualizado a las ${ahora} · refresca cada minuto si hay partidos en juego`;
+        // Seleccionar hoy o primera fecha disponible
+        const fechaInicial = fechas.includes(hoy) ? hoy : fechas[0];
+        const tabInicial   = tabsEl.querySelector(`button[onclick*="'${fechaInicial}'"]`);
+        if (tabInicial) tabInicial.classList.add('active');
+        renderFecha(fechaInicial);
+
+        const ahora = new Date().toLocaleTimeString('es', {
+          timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
+        });
+        document.getElementById('refresh-info').textContent = `Actualizado a las ${ahora}`;
 
       } catch(e) {
-        document.getElementById('contenido').innerHTML = '<div class="estado">Error cargando partidos.<br>Comprueba la conexión.</div>';
+        document.getElementById('contenido').innerHTML =
+          '<div class="estado">Error cargando partidos.<br>Comprueba la conexión.</div>';
       }
     }
 
-    // Fecha de hoy
-    document.getElementById('fecha').textContent = new Date().toLocaleDateString('es', {
-      weekday:'long', day:'numeric', month:'long', timeZone:'Europe/Madrid'
-    });
-
     cargar();
-    // Auto-refresh cada 60s si hay partidos live
-    setInterval(() => {
-      if (_partidos.some(m => tipoPartido(m) === 'live')) cargar();
-    }, 60000);
+    setInterval(cargar, 5 * 60 * 1000);
   </script>
 </body>
 </html>
