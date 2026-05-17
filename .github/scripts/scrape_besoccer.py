@@ -33,31 +33,18 @@ def get_estado(status_id):
     return 'finalizado'
 
 def fetch_html():
-    # Jina AI Reader — accede como navegador real, bypasa el bloqueo 406
+    # Jina AI Reader — free tier, sin auth, bypasa el bloqueo 406 de BeSoccer
     r = requests.get(
         'https://r.jina.ai/https://es.besoccer.com/',
         headers={
-            'Accept':          'application/json',
+            'Accept':          'text/html',
             'X-Return-Format': 'html',
-            'Authorization':   'Bearer jina_free',
         },
         timeout=60,
     )
     print(f'Jina status: {r.status_code} — bytes: {len(r.content)}')
-
-    if r.status_code == 200:
-        try:
-            data = r.json()
-            html = data.get('data', {}).get('content', '') or data.get('data', {}).get('html', '')
-            if html:
-                print('HTML obtenido via JSON de Jina')
-                return html
-        except Exception:
-            pass
-        print('Usando respuesta directa de Jina')
-        return r.text
-
-    raise RuntimeError(f'Jina devolvió {r.status_code}')
+    r.raise_for_status()
+    return r.text
 
 def extract_matches(html):
     competiciones = []
