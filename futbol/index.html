@@ -53,7 +53,7 @@
     .filtros-wrap {
       overflow-x: auto;
       scrollbar-width: none;
-      padding: 0 16px 14px;
+      padding: 0 16px 12px;
     }
     .filtros-wrap::-webkit-scrollbar { display: none; }
     .filtros-row { display: flex; gap: 8px; width: max-content; }
@@ -124,8 +124,11 @@
     .partido {
       background: var(--surface);
       border-radius: 12px;
-      padding: 12px 14px;
+      padding: 10px 14px 10px;
       margin-bottom: 4px;
+    }
+
+    .partido-fila {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
@@ -156,7 +159,6 @@
     }
     .equipo.away .equipo-nombre { text-align: right; }
 
-    /* ── Centro ── */
     .centro {
       display: flex;
       flex-direction: column;
@@ -200,6 +202,25 @@
       50%       { opacity: 0.4; }
     }
 
+    /* ── Canales ── */
+    .canales {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .canal-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 8px;
+      color: #fff;
+      white-space: nowrap;
+    }
+
     .estado {
       text-align: center;
       padding: 60px 20px;
@@ -227,176 +248,154 @@
   <div class="contenido" id="contenido"><div class="estado">Cargando...</div></div>
 
   <script>
-    const API_KEY = '8ba9597eac157b648940bdae728644ee';
-    const BASE    = 'https://v3.football.api-sports.io';
-
-    // Ligas a mostrar
-    const LIGAS = new Set([
-      140,  // LaLiga
-      141,  // Segunda División
-      2,    // Champions League
-      3,    // Europa League
-      848,  // Conference League
-      39,   // Premier League
-      78,   // Bundesliga
-      135,  // Serie A
-      61,   // Ligue 1
-      94,   // Primeira Liga
-      88,   // Eredivisie
-      262,  // Liga MX
-      345,  // Copa del Rey
-      48,   // FA Cup
-      137,  // Coppa Italia
-      66,   // Coupe de France
-    ]);
-
-    const LIVE_ST = new Set(['1H','HT','2H','ET','BT','P','LIVE']);
-    const FT_ST   = new Set(['FT','AET','PEN','ABD','AWD','WO']);
-
-    function tipo(m) {
-      const s = m.fixture.status.short;
-      if (LIVE_ST.has(s)) return 'live';
-      if (FT_ST.has(s))   return 'finalizado';
-      return 'proximo';
+    function colorCanal(nombre) {
+      const n = nombre.toLowerCase();
+      if (n.includes('dazn'))                       return '#0a5a8a';
+      if (n.includes('movistar') || n.includes('m+')) return '#004f9f';
+      if (n.includes('laliga') || n.includes('la liga')) return '#c07000';
+      if (n.includes('teledeporte'))                return '#8b0000';
+      if (n.includes('tve') || n.includes('la 1')) return '#8b0000';
+      if (n.includes('bein'))                       return '#7b0000';
+      if (n.includes('eurosport'))                  return '#003da5';
+      if (n.includes('orange'))                     return '#b54000';
+      if (n.includes('gol'))                        return '#005010';
+      if (n.includes('sky'))                        return '#005ca9';
+      return 'rgba(255,255,255,0.18)';
     }
 
-    function horaLocal(m) {
-      return new Date(m.fixture.date).toLocaleTimeString('es', {
-        timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
-      });
-    }
-
-    function centroHtml(m) {
-      const t = tipo(m);
-      const s = m.fixture.status.short;
-
-      if (t === 'proximo') {
-        return `<span class="hora">${horaLocal(m)}</span>`;
+    function centroHtml(p) {
+      if (p.estado === 'proximo') {
+        return `<span class="hora">${p.hora}</span>`;
       }
-
-      const gH = m.goals.home ?? 0;
-      const gA = m.goals.away ?? 0;
-      const marc = `<span class="marcador">${gH} - ${gA}</span>`;
-
-      if (t === 'live') {
-        const min = s === 'HT' ? 'HT' : (m.fixture.status.elapsed ?? '?') + "'";
+      const gL = p.golesLocal ?? 0;
+      const gV = p.golesVisitante ?? 0;
+      const marc = `<span class="marcador">${gL} - ${gV}</span>`;
+      if (p.estado === 'live') {
+        const min = p.minuto ? p.minuto + "'" : 'EN JUEGO';
         return marc + `<span class="estado-live">${min}</span>`;
       }
-
-      const suf = s === 'AET' ? ' ET' : s === 'PEN' ? ' P' : '';
-      return marc + `<span class="estado-ft">FT${suf}</span>`;
+      return marc + `<span class="estado-ft">FT</span>`;
     }
 
-    function partidoHtml(m) {
+    function canalesHtml(canales) {
+      if (!canales || !canales.length) return '';
+      return `<div class="canales">${canales.map(c =>
+        `<span class="canal-chip" style="background:${colorCanal(c)}">${c}</span>`
+      ).join('')}</div>`;
+    }
+
+    function partidoHtml(p) {
       return `
-        <div class="partido" data-tipo="${tipo(m)}">
-          <div class="equipo home">
-            <img src="${m.teams.home.logo}" onerror="this.style.display='none'" loading="lazy">
-            <span class="equipo-nombre">${m.teams.home.name}</span>
+        <div class="partido" data-estado="${p.estado}">
+          <div class="partido-fila">
+            <div class="equipo home">
+              <img src="${p.logoLocal}" onerror="this.style.display='none'" loading="lazy">
+              <span class="equipo-nombre">${p.local}</span>
+            </div>
+            <div class="centro">${centroHtml(p)}</div>
+            <div class="equipo away">
+              <img src="${p.logoVisitante}" onerror="this.style.display='none'" loading="lazy">
+              <span class="equipo-nombre">${p.visitante}</span>
+            </div>
           </div>
-          <div class="centro">${centroHtml(m)}</div>
-          <div class="equipo away">
-            <img src="${m.teams.away.logo}" onerror="this.style.display='none'" loading="lazy">
-            <span class="equipo-nombre">${m.teams.away.name}</span>
-          </div>
+          ${canalesHtml(p.canales)}
         </div>`;
     }
 
     let _filtroActivo = 'todos';
-    let _partidos     = [];
-    let _timer        = null;
+    let _data = null;
+    let _timer = null;
 
     function setFiltro(f, btn) {
       _filtroActivo = f;
       document.querySelectorAll('.filtro').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      renderPartidos();
+      if (_data) render(_data);
     }
     window.setFiltro = setFiltro;
 
-    function renderPartidos() {
+    function render(data) {
       const cont = document.getElementById('contenido');
-      const lista = _filtroActivo === 'todos'       ? _partidos
-                  : _filtroActivo === 'live'        ? _partidos.filter(m => tipo(m) === 'live')
-                  : _filtroActivo === 'proximos'    ? _partidos.filter(m => tipo(m) === 'proximo')
-                  : _partidos.filter(m => tipo(m) === 'finalizado');
+
+      // Aplanar todos los partidos con el nombre de competición
+      const todos = data.competiciones.flatMap(c =>
+        c.partidos.map(p => ({ ...p, _comp: c.nombre, _fotmob: c.fotmobId }))
+      );
+
+      const lista = _filtroActivo === 'todos'       ? todos
+                  : _filtroActivo === 'live'        ? todos.filter(p => p.estado === 'live')
+                  : _filtroActivo === 'proximos'    ? todos.filter(p => p.estado === 'proximo')
+                  : todos.filter(p => p.estado === 'finalizado');
 
       if (!lista.length) {
         cont.innerHTML = '<div class="estado">No hay partidos en este filtro.</div>';
         return;
       }
 
-      const porLiga = {};
-      lista.forEach(m => {
-        const k = m.league.id;
-        if (!porLiga[k]) porLiga[k] = { liga: m.league, lista: [] };
-        porLiga[k].lista.push(m);
+      // Reagrupar por competición manteniendo el orden original
+      const porComp = {};
+      lista.forEach(p => {
+        if (!porComp[p._comp]) porComp[p._comp] = { nombre: p._comp, fotmob: p._fotmob, lista: [] };
+        porComp[p._comp].lista.push(p);
       });
 
-      Object.values(porLiga).forEach(g =>
-        g.lista.sort((a, b) => new Date(a.fixture.date) - new Date(b.fixture.date))
-      );
+      const logoUrl = id => id
+        ? `https://images.fotmob.com/image_resources/logo/leaguelogo/dark/${id}.png`
+        : null;
 
-      cont.innerHTML = Object.values(porLiga).map(g => `
-        <div class="liga-section">
-          <div class="liga-header">
-            <img src="${g.liga.logo}" onerror="this.style.display='none'" loading="lazy">
-            <span>${g.liga.name}</span>
-          </div>
-          ${g.lista.map(partidoHtml).join('')}
-        </div>`).join('');
-    }
+      cont.innerHTML = Object.values(porComp).map(g => {
+        const logo = logoUrl(g.fotmob);
+        return `
+          <div class="liga-section">
+            <div class="liga-header">
+              ${logo ? `<img src="${logo}" onerror="this.style.display='none'" loading="lazy">` : ''}
+              <span>${g.nombre}</span>
+            </div>
+            ${g.lista.map(partidoHtml).join('')}
+          </div>`;
+      }).join('');
 
-    async function cargar(forzar = false) {
-      const hoy      = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Madrid' });
-      const CLAVE    = 'futbol_apiv3';
-      const cache    = JSON.parse(localStorage.getItem(CLAVE) || 'null');
-
-      let partidos;
-      let desdCache = false;
-
-      if (!forzar && cache && cache.fecha === hoy) {
-        const hayLive = cache.partidos.some(m => LIVE_ST.has(m.fixture.status.short));
-        const ttl     = hayLive ? 60_000 : Infinity;
-        if (Date.now() - cache.ts < ttl) {
-          partidos  = cache.partidos;
-          desdCache = true;
-        }
-      }
-
-      if (!partidos) {
-        try {
-          const r    = await fetch(`${BASE}/fixtures?date=${hoy}`, {
-            headers: { 'x-apisports-key': API_KEY }
-          });
-          const data = await r.json();
-          partidos   = (data.response || []).filter(m => LIGAS.has(m.league.id));
-          localStorage.setItem(CLAVE, JSON.stringify({ fecha: hoy, ts: Date.now(), partidos }));
-        } catch {
-          document.getElementById('contenido').innerHTML =
-            '<div class="estado">Error cargando partidos.<br>Comprueba la conexión.</div>';
-          return;
-        }
-      }
-
-      _partidos = partidos;
-
-      const nLive = partidos.filter(m => tipo(m) === 'live').length;
+      // Badge en juego
+      const nLive = todos.filter(p => p.estado === 'live').length;
       const badge = document.getElementById('badge-live');
       badge.textContent  = nLive;
       badge.style.display = nLive ? 'inline-block' : 'none';
 
-      renderPartidos();
-
+      // Info
       const ahora = new Date().toLocaleTimeString('es', {
         timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
       });
+      const upd = data.actualizado
+        ? new Date(data.actualizado).toLocaleTimeString('es', {
+            timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
+          })
+        : ahora;
       document.getElementById('refresh-info').textContent = nLive
-        ? `Actualizado a las ${ahora} · refresca cada minuto`
-        : `Actualizado a las ${ahora}`;
+        ? `Datos de las ${upd} · se actualiza cada 5 min`
+        : `Datos de las ${upd}`;
 
+      // Auto-refresco cada 5 min si hay partidos en juego
       if (_timer) clearTimeout(_timer);
-      if (nLive) _timer = setTimeout(() => cargar(true), 60_000);
+      if (nLive) _timer = setTimeout(cargar, 5 * 60 * 1000);
+    }
+
+    async function cargar() {
+      try {
+        const r    = await fetch(`partidos.json?t=${Date.now()}`);
+        const data = await r.json();
+        _data = data;
+
+        if (!data.competiciones || !data.competiciones.length) {
+          document.getElementById('contenido').innerHTML =
+            '<div class="estado">No hay partidos disponibles aún.<br>Vuelve más tarde.</div>';
+          return;
+        }
+
+        render(data);
+      } catch {
+        document.getElementById('contenido').innerHTML =
+          '<div class="estado">Error cargando partidos.<br>Comprueba la conexión.</div>';
+      }
     }
 
     document.getElementById('fecha').textContent = new Date().toLocaleDateString('es', {

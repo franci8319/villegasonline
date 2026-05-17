@@ -1,0 +1,33 @@
+name: Actualiza partidos futbol
+
+on:
+  schedule:
+    - cron: '*/5 9-23 * * *'  # Cada 5 min de 9 a 23 UTC (11-01 Madrid)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar scraper
+        run: python .github/scripts/scrape_besoccer.py
+
+      - name: Publicar JSON
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add futbol/partidos.json
+          git diff --staged --quiet || git commit -m "Partidos $(date -u +'%H:%M UTC')"
+          git push
