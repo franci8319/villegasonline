@@ -1,6 +1,7 @@
 import requests
 import re
 import json
+import sys
 from datetime import datetime, timezone
 
 FOTMOB = {
@@ -18,14 +19,15 @@ FOTMOB = {
     'ligue 1':                   53,
     'copa del rey':              138,
     'fa cup':                    132,
+    'primera liga':              94,
     'primeira liga':             94,
     'eredivisie':                88,
     'liga mx':                   262,
     'copa america':              77,
-    'copa america':              77,
+    'copa américa':              77,
 }
 
-def estado(status_id):
+def get_estado(status_id):
     sid = int(status_id) if str(status_id).isdigit() else 0
     if sid == 0:
         return 'proximo'
@@ -33,18 +35,28 @@ def estado(status_id):
         return 'live'
     return 'finalizado'
 
-def scrape():
-    r = requests.get(
-        'https://es.besoccer.com/',
-        headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept-Language': 'es-ES,es;q=0.9',
-        },
-        timeout=30,
-    )
+def fetch_html():
+    session = requests.Session()
+    headers = {
+        'User-Agent': (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/124.0.0.0 Safari/537.36'
+        ),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+    }
+    r = session.get('https://es.besoccer.com/', headers=headers, timeout=30)
+    print(f'Status HTTP: {r.status_code}')
+    print(f'Bytes recibidos: {len(r.content)}')
     r.raise_for_status()
-    html = r.text
+    return r.text
 
+def extract_matches(html):
     competiciones = []
     vistas = set()
 
@@ -54,7 +66,6 @@ def scrape():
             continue
         vistas.add(nombre_comp)
 
-        # Extraer el array JSON buscando el corchete de cierre correspondiente
         inicio = m.end() - 1
         depth, i = 0, inicio
         while i < len(html):
@@ -68,7 +79,8 @@ def scrape():
 
         try:
             raw = json.loads(html[inicio:i + 1])
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            print(f'  JSON error en {nombre_comp}: {e}')
             continue
 
         partidos = []
@@ -98,17 +110,37 @@ def scrape():
                 'golesLocal':     goles_l,
                 'golesVisitante': goles_v,
                 'statusId':       int(sid) if sid.isdigit() else 0,
-                'estado':         estado(sid),
+                'estado':         get_estado(sid),
                 'minuto':         str(p.get('lmin', '')),
                 'canales':        [c['name'] for c in p.get('tv', [])],
             })
 
         if partidos:
             competiciones.append({
-                'nombre':    nombre_comp,
-                'fotmobId':  FOTMOB.get(nombre_comp.lower()),
-                'partidos':  partidos,
+                'nombre':   nombre_comp,
+                'fotmobId': FOTMOB.get(nombre_comp.lower()),
+                'partidos': partidos,
             })
+            print(f'  {nombre_comp}: {len(partidos)} partidos')
+
+    return competiciones
+
+def main():
+    print('Descargando BeSoccer...')
+    html = fetch_html()
+
+    print('Buscando partidos...')
+    competiciones = extract_matches(html)
+
+    if not competiciones:
+        # Mostrar fragmento del HTML para diagnóstico
+        print('AVISO: no se encontraron competiciones.')
+        snippet = html[:2000].replace('\n', ' ')
+        print(f'Inicio del HTML: {snippet}')
+        # No falla — escribe JSON vacío para no romper la web
+    else:
+        total = sum(len(c['partidos']) for c in competiciones)
+        print(f'Total: {len(competiciones)} competiciones, {total} partidos')
 
     out = {
         'actualizado': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -118,8 +150,7 @@ def scrape():
     with open('futbol/partidos.json', 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    total = sum(len(c['partidos']) for c in competiciones)
-    print(f"OK: {len(competiciones)} competiciones, {total} partidos")
+    print('partidos.json guardado.')
 
 if __name__ == '__main__':
-    scrape()
+    main()
