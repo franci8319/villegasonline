@@ -34,12 +34,15 @@ def get_estado(status_id):
     return 'finalizado'
 
 def fetch_html():
-    # Jina AI Reader — free tier, sin auth, bypasa el bloqueo 406 de BeSoccer
+    # /partidos muestra todos los partidos del día sin filtro geográfico
+    # Accept-Language fuerza contenido en español
     r = requests.get(
-        'https://r.jina.ai/https://es.besoccer.com/',
+        'https://r.jina.ai/https://es.besoccer.com/partidos',
         headers={
-            'Accept':          'text/html',
-            'X-Return-Format': 'html',
+            'Accept':           'text/html',
+            'X-Return-Format':  'html',
+            'Accept-Language':  'es-ES,es;q=0.9',
+            'X-Forwarded-For':  '80.58.61.250',   # IP española (Telefónica)
         },
         timeout=60,
     )
