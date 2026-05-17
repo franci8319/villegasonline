@@ -49,7 +49,6 @@
       text-transform: uppercase;
     }
 
-    /* ── Filtros ── */
     .filtros-wrap {
       overflow-x: auto;
       scrollbar-width: none;
@@ -91,14 +90,12 @@
       padding-bottom: 8px;
     }
 
-    /* ── Contenido ── */
     .contenido {
       padding: 0 12px 80px;
       max-width: 640px;
       margin: 0 auto;
     }
 
-    /* ── Liga ── */
     .liga-section { margin-bottom: 16px; }
 
     .liga-header {
@@ -107,11 +104,7 @@
       gap: 8px;
       padding: 8px 4px 6px;
     }
-    .liga-header img {
-      width: 20px;
-      height: 20px;
-      object-fit: contain;
-    }
+    .liga-header img { width: 20px; height: 20px; object-fit: contain; }
     .liga-header span {
       font-size: 12px;
       font-weight: 600;
@@ -120,11 +113,10 @@
       letter-spacing: 0.6px;
     }
 
-    /* ── Partido ── */
     .partido {
       background: var(--surface);
       border-radius: 12px;
-      padding: 10px 14px 10px;
+      padding: 10px 14px;
       margin-bottom: 4px;
     }
 
@@ -143,12 +135,7 @@
     }
     .equipo.away { flex-direction: row-reverse; }
 
-    .equipo img {
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
-      flex-shrink: 0;
-    }
+    .equipo img { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
 
     .equipo-nombre {
       font-size: 14px;
@@ -168,17 +155,8 @@
       min-width: 72px;
     }
 
-    .marcador {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    .hora {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-sub);
-    }
+    .marcador { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+    .hora     { font-size: 16px; font-weight: 600; color: var(--text-sub); }
 
     .estado-live {
       font-size: 10px;
@@ -190,19 +168,13 @@
       letter-spacing: 0.5px;
       animation: pulso 1.5s infinite;
     }
-
-    .estado-ft {
-      font-size: 10px;
-      color: var(--text-sub);
-      letter-spacing: 0.5px;
-    }
+    .estado-ft { font-size: 10px; color: var(--text-sub); letter-spacing: 0.5px; }
 
     @keyframes pulso {
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.4; }
     }
 
-    /* ── Canales ── */
     .canales {
       display: flex;
       flex-wrap: wrap;
@@ -211,7 +183,6 @@
       padding-top: 7px;
       border-top: 1px solid rgba(255,255,255,0.08);
     }
-
     .canal-chip {
       font-size: 11px;
       font-weight: 600;
@@ -248,151 +219,276 @@
   <div class="contenido" id="contenido"><div class="estado">Cargando...</div></div>
 
   <script>
-    function colorCanal(nombre) {
-      const n = nombre.toLowerCase();
-      if (n.includes('dazn'))                       return '#0a5a8a';
-      if (n.includes('movistar') || n.includes('m+')) return '#004f9f';
-      if (n.includes('laliga') || n.includes('la liga')) return '#c07000';
-      if (n.includes('teledeporte'))                return '#8b0000';
-      if (n.includes('tve') || n.includes('la 1')) return '#8b0000';
-      if (n.includes('bein'))                       return '#7b0000';
-      if (n.includes('eurosport'))                  return '#003da5';
-      if (n.includes('orange'))                     return '#b54000';
-      if (n.includes('gol'))                        return '#005010';
-      if (n.includes('sky'))                        return '#005ca9';
+    // ── Claves API ─────────────────────────────────────────────
+    const APF_KEY   = '8ba9597eac157b648940bdae728644ee';
+    const WOSTI_KEY = '377f6b2cdamsh3512a63c8914e18p1d56a8jsn5d27e0e9aede';
+
+    // ── Ligas API-Football a mostrar ───────────────────────────
+    const LIGAS = new Set([
+      140, 141,        // LaLiga + Segunda
+      2, 3, 848,       // Champions, Europa, Conference
+      39,              // Premier League
+      78,              // Bundesliga
+      135,             // Serie A
+      61,              // Ligue 1
+      94,              // Primeira Liga
+      88,              // Eredivisie
+      262,             // Liga MX
+      345, 48,         // Copa del Rey, FA Cup
+    ]);
+
+    const LIVE_ST = new Set(['1H','HT','2H','ET','BT','P','LIVE']);
+    const FT_ST   = new Set(['FT','AET','PEN','ABD','AWD','WO']);
+
+    // ── Normalización para emparejar competiciones ─────────────
+    function normComp(name) {
+      const n = (name || '').toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/\buefa\b/g, '').replace(/\s+/g, ' ').trim();
+      if (/primera.divis|^laliga$|la.liga/.test(n)) return 'laliga';
+      if (/segunda|hypermotion/.test(n))             return 'segunda';
+      if (/champions/.test(n))                       return 'champions';
+      if (/europa.league/.test(n))                   return 'europa';
+      if (/conference/.test(n))                      return 'conference';
+      if (/premier.league/.test(n))                  return 'premier';
+      if (/bundesliga/.test(n))                      return 'bundesliga';
+      if (/serie.a/.test(n))                         return 'seriea';
+      if (/ligue.1/.test(n))                         return 'ligue1';
+      if (/copa.del.rey/.test(n))                    return 'copadelrey';
+      if (/fa.cup/.test(n))                          return 'facup';
+      if (/primeira|liga.port/.test(n))              return 'portugal';
+      if (/eredivisie/.test(n))                      return 'eredivisie';
+      return n;
+    }
+
+    function normTeam(name) {
+      return (name || '').toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[.\-_]/g, ' ')
+        .replace(/\b(fc|af|cf|sc|ac|fk|cd|ud|sd|cp|afc|rfc)\b/g, '')
+        .replace(/\bunited\b/g, 'utd')
+        .replace(/\s+/g, ' ').trim();
+    }
+
+    function teamsMatch(t1, t2) {
+      const n1 = normTeam(t1), n2 = normTeam(t2);
+      if (n1 === n2) return true;
+      if (n1.includes(n2) || n2.includes(n1)) return true;
+      const w1 = n1.split(' ')[0], w2 = n2.split(' ')[0];
+      return w1.length > 3 && w1 === w2;
+    }
+
+    // ── Limpieza de canales Wosti ──────────────────────────────
+    function limpiarNombreCanal(name) {
+      return name
+        .replace(/\s*\(Ver en directo\)/gi, '')
+        .replace(/\s*\([MmOo]\d+[^)]*\)/g, '')
+        .replace(/\s*\(\d+\)/g, '')
+        .replace(/\s*:\s*VER PARTIDO/gi, '')
+        .replace(/LALIGA TV Hypermotion/i, 'LaLiga TV')
+        .replace(/Movistar Plus\+/i, 'Movistar+')
+        .trim();
+    }
+
+    function limpiarCanales(channels) {
+      const seen = new Set();
+      return (channels || [])
+        .filter(c => !c.Name.toLowerCase().includes(' bar'))
+        .map(c => limpiarNombreCanal(c.Name))
+        .filter(n => n && !seen.has(n) && seen.add(n));
+    }
+
+    // ── Merge de los dos datasets ──────────────────────────────
+    function merge(apfList, wostiList) {
+      const hoy = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Madrid' });
+      const wostiHoy = (wostiList || []).filter(w =>
+        new Date(w.Date).toLocaleDateString('sv', { timeZone: 'Europe/Madrid' }) === hoy
+      );
+
+      return apfList.map(p => {
+        const wMatch = wostiHoy.find(w =>
+          normComp(p.league.name) === normComp(w.Competition.Name) &&
+          teamsMatch(p.teams.home.name, w.LocalTeam.Name)
+        );
+        return { ...p, canales: wMatch ? limpiarCanales(wMatch.Channels) : [] };
+      });
+    }
+
+    // ── Fetch API-Football (caché 60s si live, resto del día si no) ──
+    async function fetchAPF() {
+      const hoy   = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Madrid' });
+      const CLAVE = 'futbol_apf_v3';
+      const cache = JSON.parse(localStorage.getItem(CLAVE) || 'null');
+
+      if (cache && cache.fecha === hoy) {
+        const hayLive = cache.data.some(m => LIVE_ST.has(m.fixture.status.short));
+        if (Date.now() - cache.ts < (hayLive ? 60_000 : Infinity)) return cache.data;
+      }
+
+      const r    = await fetch(`https://v3.football.api-sports.io/fixtures?date=${hoy}`,
+                    { headers: { 'x-apisports-key': APF_KEY } });
+      const json = await r.json();
+      const data = (json.response || []).filter(m => LIGAS.has(m.league.id));
+      localStorage.setItem(CLAVE, JSON.stringify({ fecha: hoy, ts: Date.now(), data }));
+      return data;
+    }
+
+    // ── Fetch Wosti (caché todo el día) ───────────────────────
+    async function fetchWosti() {
+      const hoy   = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Madrid' });
+      const CLAVE = 'futbol_wosti_v2';
+      const cache = JSON.parse(localStorage.getItem(CLAVE) || 'null');
+      if (cache && cache.fecha === hoy) return cache.data;
+
+      const r    = await fetch('https://wosti-futbol-tv-spain.p.rapidapi.com/api/Events', {
+        headers: {
+          'x-rapidapi-key':  WOSTI_KEY,
+          'x-rapidapi-host': 'wosti-futbol-tv-spain.p.rapidapi.com',
+        }
+      });
+      const data = await r.json();
+      if (!Array.isArray(data)) throw new Error('bad wosti');
+      localStorage.setItem(CLAVE, JSON.stringify({ fecha: hoy, ts: Date.now(), data }));
+      return data;
+    }
+
+    // ── Render ─────────────────────────────────────────────────
+    function tipo(m) {
+      const s = m.fixture.status.short;
+      if (LIVE_ST.has(s)) return 'live';
+      if (FT_ST.has(s))   return 'finalizado';
+      return 'proximo';
+    }
+
+    function horaLocal(m) {
+      return new Date(m.fixture.date).toLocaleTimeString('es', {
+        timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function centroHtml(m) {
+      const t = tipo(m), s = m.fixture.status.short;
+      if (t === 'proximo') return `<span class="hora">${horaLocal(m)}</span>`;
+      const gH = m.goals.home ?? 0, gA = m.goals.away ?? 0;
+      const marc = `<span class="marcador">${gH} - ${gA}</span>`;
+      if (t === 'live') {
+        const min = s === 'HT' ? 'HT' : (m.fixture.status.elapsed ?? '?') + "'";
+        return marc + `<span class="estado-live">${min}</span>`;
+      }
+      const suf = s === 'AET' ? ' ET' : s === 'PEN' ? ' P' : '';
+      return marc + `<span class="estado-ft">FT${suf}</span>`;
+    }
+
+    function colorCanal(n) {
+      const s = n.toLowerCase();
+      if (s.includes('dazn'))                             return '#0a5a8a';
+      if (s.includes('movistar') || s.includes('m+'))    return '#004f9f';
+      if (s.includes('laliga') || s.includes('la liga')) return '#c07000';
+      if (s.includes('teledeporte') || s.includes('tve') || s.includes('la 1')) return '#8b0000';
+      if (s.includes('bein'))    return '#7b0000';
+      if (s.includes('eurosport')) return '#003da5';
+      if (s.includes('orange'))  return '#b54000';
+      if (s.includes('gol'))     return '#005010';
       return 'rgba(255,255,255,0.18)';
     }
 
-    function centroHtml(p) {
-      if (p.estado === 'proximo') {
-        return `<span class="hora">${p.hora}</span>`;
-      }
-      const gL = p.golesLocal ?? 0;
-      const gV = p.golesVisitante ?? 0;
-      const marc = `<span class="marcador">${gL} - ${gV}</span>`;
-      if (p.estado === 'live') {
-        const min = p.minuto ? p.minuto + "'" : 'EN JUEGO';
-        return marc + `<span class="estado-live">${min}</span>`;
-      }
-      return marc + `<span class="estado-ft">FT</span>`;
-    }
-
-    function canalesHtml(canales) {
-      if (!canales || !canales.length) return '';
-      return `<div class="canales">${canales.map(c =>
-        `<span class="canal-chip" style="background:${colorCanal(c)}">${c}</span>`
-      ).join('')}</div>`;
-    }
-
-    function partidoHtml(p) {
+    function partidoHtml(m) {
+      const canalesHtml = m.canales.length
+        ? `<div class="canales">${m.canales.map(c =>
+            `<span class="canal-chip" style="background:${colorCanal(c)}">${c}</span>`
+          ).join('')}</div>`
+        : '';
       return `
-        <div class="partido" data-estado="${p.estado}">
+        <div class="partido" data-tipo="${tipo(m)}">
           <div class="partido-fila">
             <div class="equipo home">
-              <img src="${p.logoLocal}" onerror="this.style.display='none'" loading="lazy">
-              <span class="equipo-nombre">${p.local}</span>
+              <img src="${m.teams.home.logo}" onerror="this.style.display='none'" loading="lazy">
+              <span class="equipo-nombre">${m.teams.home.name}</span>
             </div>
-            <div class="centro">${centroHtml(p)}</div>
+            <div class="centro">${centroHtml(m)}</div>
             <div class="equipo away">
-              <img src="${p.logoVisitante}" onerror="this.style.display='none'" loading="lazy">
-              <span class="equipo-nombre">${p.visitante}</span>
+              <img src="${m.teams.away.logo}" onerror="this.style.display='none'" loading="lazy">
+              <span class="equipo-nombre">${m.teams.away.name}</span>
             </div>
           </div>
-          ${canalesHtml(p.canales)}
+          ${canalesHtml}
         </div>`;
     }
 
-    let _filtroActivo = 'todos';
-    let _data = null;
-    let _timer = null;
+    let _filtro  = 'todos';
+    let _partidos = [];
+    let _timer   = null;
 
     function setFiltro(f, btn) {
-      _filtroActivo = f;
+      _filtro = f;
       document.querySelectorAll('.filtro').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      if (_data) render(_data);
+      renderPartidos();
     }
     window.setFiltro = setFiltro;
 
-    function render(data) {
-      const cont = document.getElementById('contenido');
-
-      // Aplanar todos los partidos con el nombre de competición
-      const todos = data.competiciones.flatMap(c =>
-        c.partidos.map(p => ({ ...p, _comp: c.nombre, _fotmob: c.fotmobId }))
-      );
-
-      const lista = _filtroActivo === 'todos'       ? todos
-                  : _filtroActivo === 'live'        ? todos.filter(p => p.estado === 'live')
-                  : _filtroActivo === 'proximos'    ? todos.filter(p => p.estado === 'proximo')
-                  : todos.filter(p => p.estado === 'finalizado');
+    function renderPartidos() {
+      const cont  = document.getElementById('contenido');
+      const lista = _filtro === 'todos'       ? _partidos
+                  : _filtro === 'live'        ? _partidos.filter(m => tipo(m) === 'live')
+                  : _filtro === 'proximos'    ? _partidos.filter(m => tipo(m) === 'proximo')
+                  : _partidos.filter(m => tipo(m) === 'finalizado');
 
       if (!lista.length) {
         cont.innerHTML = '<div class="estado">No hay partidos en este filtro.</div>';
         return;
       }
 
-      // Reagrupar por competición manteniendo el orden original
-      const porComp = {};
-      lista.forEach(p => {
-        if (!porComp[p._comp]) porComp[p._comp] = { nombre: p._comp, fotmob: p._fotmob, lista: [] };
-        porComp[p._comp].lista.push(p);
+      const porLiga = {};
+      lista.forEach(m => {
+        const k = m.league.id;
+        if (!porLiga[k]) porLiga[k] = { liga: m.league, lista: [] };
+        porLiga[k].lista.push(m);
       });
+      Object.values(porLiga).forEach(g =>
+        g.lista.sort((a, b) => new Date(a.fixture.date) - new Date(b.fixture.date))
+      );
 
-      const logoUrl = id => id
-        ? `https://images.fotmob.com/image_resources/logo/leaguelogo/dark/${id}.png`
-        : null;
-
-      cont.innerHTML = Object.values(porComp).map(g => {
-        const logo = logoUrl(g.fotmob);
-        return `
-          <div class="liga-section">
-            <div class="liga-header">
-              ${logo ? `<img src="${logo}" onerror="this.style.display='none'" loading="lazy">` : ''}
-              <span>${g.nombre}</span>
-            </div>
-            ${g.lista.map(partidoHtml).join('')}
-          </div>`;
-      }).join('');
-
-      // Badge en juego
-      const nLive = todos.filter(p => p.estado === 'live').length;
-      const badge = document.getElementById('badge-live');
-      badge.textContent  = nLive;
-      badge.style.display = nLive ? 'inline-block' : 'none';
-
-      // Info
-      const ahora = new Date().toLocaleTimeString('es', {
-        timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
-      });
-      const upd = data.actualizado
-        ? new Date(data.actualizado).toLocaleTimeString('es', {
-            timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
-          })
-        : ahora;
-      document.getElementById('refresh-info').textContent = nLive
-        ? `Datos de las ${upd} · se actualiza cada 5 min`
-        : `Datos de las ${upd}`;
-
-      // Auto-refresco cada 5 min si hay partidos en juego
-      if (_timer) clearTimeout(_timer);
-      if (nLive) _timer = setTimeout(cargar, 5 * 60 * 1000);
+      cont.innerHTML = Object.values(porLiga).map(g => `
+        <div class="liga-section">
+          <div class="liga-header">
+            <img src="${g.liga.logo}" onerror="this.style.display='none'" loading="lazy">
+            <span>${g.liga.name}</span>
+          </div>
+          ${g.liga.lista ? '' : g.lista.map(partidoHtml).join('')}
+          ${g.lista.map(partidoHtml).join('')}
+        </div>`).join('');
     }
 
     async function cargar() {
       try {
-        const r    = await fetch(`partidos.json?t=${Date.now()}`);
-        const data = await r.json();
-        _data = data;
+        // Carga en paralelo — Wosti falla silenciosamente
+        const [apf, wosti] = await Promise.allSettled([fetchAPF(), fetchWosti()]);
 
-        if (!data.competiciones || !data.competiciones.length) {
-          document.getElementById('contenido').innerHTML =
-            '<div class="estado">No hay partidos disponibles aún.<br>Vuelve más tarde.</div>';
-          return;
-        }
+        if (apf.status === 'rejected') throw apf.reason;
 
-        render(data);
-      } catch {
+        const wostiData = wosti.status === 'fulfilled' ? wosti.value : [];
+        _partidos = merge(apf.value, wostiData);
+
+        const nLive = _partidos.filter(m => tipo(m) === 'live').length;
+        const badge = document.getElementById('badge-live');
+        badge.textContent   = nLive;
+        badge.style.display = nLive ? 'inline-block' : 'none';
+
+        renderPartidos();
+
+        const ahora = new Date().toLocaleTimeString('es', {
+          timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit'
+        });
+        const wostiOk = wosti.status === 'fulfilled';
+        document.getElementById('refresh-info').textContent = nLive
+          ? `Actualizado a las ${ahora}${wostiOk ? ' · canales TV incluidos' : ''} · refresca cada minuto`
+          : `Actualizado a las ${ahora}${wostiOk ? ' · canales TV incluidos' : ''}`;
+
+        if (_timer) clearTimeout(_timer);
+        if (nLive) _timer = setTimeout(cargar, 60_000);
+
+      } catch (e) {
         document.getElementById('contenido').innerHTML =
           '<div class="estado">Error cargando partidos.<br>Comprueba la conexión.</div>';
       }
