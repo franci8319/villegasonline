@@ -1,6 +1,7 @@
 import requests
 import re
 import json
+import html as html_module
 from datetime import datetime, timezone
 
 FOTMOB = {
@@ -50,25 +51,24 @@ def extract_matches(html):
     competiciones = []
     vistas = set()
 
-    for m in re.finditer(r"popupAlertFav\(`([^`]+)`,\s*`([^`]+)`,\s*\[", html):
+    # Jina devuelve el JSON HTML-encoded dentro de backticks:
+    # popupAlertFav(`Liga`, `id`, `[{&quot;l&quot;:&quot;...&quot;}]`)
+    pattern = re.compile(
+        r'popupAlertFav\(`([^`]+)`,\s*`[^`]*`,\s*`([^`]*)`\)'
+    )
+
+    for m in pattern.finditer(html):
         nombre_comp = m.group(1).strip()
         if nombre_comp in vistas:
             continue
         vistas.add(nombre_comp)
 
-        inicio = m.end() - 1
-        depth, i = 0, inicio
-        while i < len(html):
-            if html[i] == '[':   depth += 1
-            elif html[i] == ']':
-                depth -= 1
-                if depth == 0: break
-            i += 1
-
+        raw_json = html_module.unescape(m.group(2))
         try:
-            raw = json.loads(html[inicio:i + 1])
+            raw = json.loads(raw_json)
         except json.JSONDecodeError as e:
             print(f'  JSON error en {nombre_comp}: {e}')
+            print(f'  Primeros 200 chars: {raw_json[:200]}')
             continue
 
         partidos = []
@@ -100,6 +100,7 @@ def extract_matches(html):
                 'statusId':       int(sid) if sid.isdigit() else 0,
                 'estado':         get_estado(sid),
                 'minuto':         str(p.get('lmin', '')),
+                'canales':        p.get('tv', []),
             })
 
         if partidos:
@@ -121,7 +122,7 @@ def main():
     # Debug: mostrar contexto alrededor del primer popupAlertFav
     pos = html.find('popupAlertFav')
     if pos >= 0:
-        snippet = html[max(0, pos - 20):pos + 300]
+        snippet = html[max(0, pos - 20):pos + 400]
         print(f'Contexto:\n{repr(snippet)}')
 
     competiciones = extract_matches(html)
