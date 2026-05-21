@@ -13,9 +13,6 @@
       "Bash(git push *)",
       "Bash(git pull *)",
       "Bash(git stash *)",
-      "PowerShell(& \"e:\\\\ANTIGRAVITY\\\\scripts\\\\upload-prensa.ps1\")",
-      "PowerShell(Copy-Item \"e:\\\\ANTIGRAVITY\\\\scripts\\\\publicaciones.txt\" -Destination \"C:\\\\Users\\\\Villegas\\\\Documents\\\\Scripts\\\\publicaciones.txt\" -Force)",
-      "PowerShell(Copy-Item \"e:\\\\ANTIGRAVITY\\\\scripts\\\\upload-prensa.ps1\" -Destination \"C:\\\\Users\\\\Villegas\\\\Documents\\\\Scripts\\\\upload-prensa.ps1\" -Force)",
       "Bash(curl --silent --request GET --url https://wosti-futbol-tv-spain.p.rapidapi.com/api/Events --header 'Content-Type: application/json' --header 'x-rapidapi-host: wosti-futbol-tv-spain.p.rapidapi.com' --header 'x-rapidapi-key: 377f6b2cdamsh3512a63c8914e18p1d56a8jsn5d27e0e9aede')",
       "Bash(curl --silent --request GET \"https://v3.football.api-sports.io/fixtures?date=2026-05-17\" --header \"x-apisports-key: 8ba9597eac157b648940bdae728644ee\")",
       "WebFetch(domain:es.besoccer.com)",
@@ -29,7 +26,13 @@
       "WebFetch(domain:r.jina.ai)",
       "Bash(git rm *)",
       "Bash(git rebase *)",
-      "Bash(GIT_EDITOR=true git rebase --continue)"
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "PowerShell(Get-ScheduledTask | Where-Object { $_.TaskName -match \"prensa\" -or $_.TaskPath -match \"prensa\" } | Select-Object TaskName, TaskPath, State)",
+      "PowerShell(Unregister-ScheduledTask -TaskName \"Prensa - 2 Subir PDFs\" -Confirm:$false)",
+      "PowerShell(Get-ScheduledTask | Where-Object { $_.TaskName -match \"prensa\" -or $_.Actions.Arguments -match \"prensa\" } | Select-Object TaskName)",
+      "Bash(git -C \"e:/ANTIGRAVITY/villegasonline\" diff)",
+      "Bash(git -C \"e:/ANTIGRAVITY/villegasonline\" add index.html prensa/index.html .claude/settings.json)",
+      "Bash(git -C e:/ANTIGRAVITY/villegasonline commit -m ' *)"
     ],
     "additionalDirectories": [
       "e:\\ANTIGRAVITY",
