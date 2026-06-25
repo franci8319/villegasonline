@@ -5,145 +5,212 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Leapmotor B10 — Batería y autonomía</title>
   <link rel="icon" type="image/png" href="leapmotor-icon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=VT323&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #1a4a8a;
-      --card: rgba(255,255,255,0.08);
-      --field: rgba(255,255,255,0.15);
-      --text: #ffffff;
-      --text-sub: rgba(255,255,255,0.65);
-      --accent: #f5a623;
-      --warn: #ffcc66;
-      --error: #ff8a80;
+      --azul:      #1a4a8a;
+      --azul-dark: #0D3A70;
+      --naranja:   #D4520A;
+      --verde:     #3A7A1A;
+      --rojo:      #C41E1E;
+      --fondo:     #EDE8DF;
+      --panel:     #F5F0E8;
+      --panel2:    #E8E2D8;
+      --gold:      #B8860B;
+      --gold-lt:   #D4A017;
+      --metal:     #7A8A9A;
+      --txt:       #1A1208;
+      --txt-dim:   #6A5A3A;
+      --border:    #B8A888;
     }
 
     html, body {
       min-height: 100dvh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-                   "Helvetica Neue", Arial, sans-serif;
+      background: var(--fondo);
+      color: var(--txt);
+      font-family: 'Oswald', sans-serif;
       -webkit-font-smoothing: antialiased;
     }
 
-    header {
+    /* ── Header ── */
+    .app-header {
+      background: var(--azul);
+      color: #fff;
+      padding: 14px 16px;
+      border-bottom: 4px solid var(--azul-dark);
+      box-shadow: 0 3px 0 var(--gold);
+      position: sticky;
+      top: 0;
+      z-index: 100;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 32px 24px 8px;
-      text-align: center;
-      gap: 4px;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    .back {
-      align-self: flex-start;
-      color: var(--text-sub);
+    .hdr-title { font-family: 'Bebas Neue', 'Oswald', sans-serif; font-size: 22px; letter-spacing: 3px; line-height: 1.1; }
+    .hdr-sub   { font-family: 'Oswald', sans-serif; font-size: 11px; color: rgba(255,255,255,.75); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+    .hdr-back {
+      flex-shrink: 0;
+      background: none;
+      border: 2px solid rgba(255,255,255,.4);
+      color: rgba(255,255,255,.85);
+      padding: 6px 10px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
       text-decoration: none;
-      font-size: 13px;
-      margin-bottom: 12px;
     }
+    .hdr-back:hover { border-color: #fff; color: #fff; }
 
-    header h1 { font-size: 26px; font-weight: 700; }
-    header .subtitle { color: var(--text-sub); font-size: 14px; }
-
+    /* ── Layout ── */
     main {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 16px 80px;
-      gap: 20px;
+      padding: 18px 14px 60px;
+      gap: 14px;
     }
 
+    /* ── Cards ── */
     .card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 20px;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      box-shadow: 4px 4px 0 rgba(0,0,0,.12);
+      padding: 16px 16px 14px;
       width: min(440px, 100%);
     }
 
-    .card h2 { font-size: 16px; margin-bottom: 14px; }
+    .card-title {
+      font-family: 'Bebas Neue', 'Oswald', sans-serif;
+      font-size: 18px;
+      color: var(--azul);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
 
+    /* ── Fields ── */
     label {
       display: block;
+      font-family: 'Oswald', sans-serif;
       font-size: 12px;
-      color: var(--text-sub);
-      margin-bottom: 4px;
+      font-weight: 600;
+      color: var(--azul);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
     }
 
     input[type="number"] {
       width: 100%;
-      padding: 9px 10px;
-      border: none;
-      border-radius: 8px;
-      background: var(--field);
-      color: var(--text);
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      background: #fff;
+      color: var(--txt);
+      font-family: 'Oswald', sans-serif;
       font-size: 15px;
       margin-bottom: 14px;
     }
 
-    input[type="number"]::placeholder { color: var(--text-sub); }
+    input[type="number"]:focus { border-color: var(--azul); outline: none; box-shadow: 3px 3px 0 rgba(26,74,138,.2); }
+    input[type="number"]::placeholder { color: var(--metal); }
 
-    .radio-row { display: flex; gap: 16px; margin-bottom: 14px; }
-    .radio-row label {
+    /* ── Segmented toggle (version / tipo de carga) ── */
+    .seg-tabs {
       display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--text);
+      gap: 0;
+      margin-bottom: 14px;
+      background: var(--panel2);
+      border: 2px solid var(--border);
+      padding: 2px;
+    }
+
+    .seg-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--txt-dim);
+      cursor: pointer;
       margin-bottom: 0;
     }
 
-    .results {
-      margin-top: 6px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(255,255,255,0.15);
+    .seg-tab input { display: none; }
+    .seg-tab:has(input:checked) { background: var(--azul); color: #fff; }
+
+    /* ── Hero result (tiempo de carga) ── */
+    .hero-result {
+      background: var(--azul);
+      color: #fff;
+      border: 3px solid var(--azul-dark);
+      box-shadow: 5px 5px 0 var(--azul-dark);
+      padding: 14px 16px 12px;
+      margin: 4px 0 14px;
+      text-align: center;
     }
 
-    .result-row {
+    .hero-label { font-family: 'Oswald', sans-serif; font-size: 11px; color: rgba(255,255,255,.7); letter-spacing: 2px; text-transform: uppercase; }
+    .hero-value { font-family: 'Bebas Neue', 'Oswald', sans-serif; font-size: 38px; margin: 4px 0; line-height: 1; letter-spacing: 2px; }
+    .hero-sub   { font-family: 'Oswald', sans-serif; font-size: 12px; color: var(--gold-lt); min-height: 14px; margin-top: 2px; }
+
+    /* ── Result rows ── */
+    .results { margin-top: 2px; }
+
+    .result-row, .range-compare {
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .result-row strong { color: var(--accent); font-weight: 700; }
-
-    .range-compare {
-      display: flex;
-      justify-content: space-between;
+      align-items: baseline;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Oswald', sans-serif;
       font-size: 13px;
-      margin-bottom: 10px;
+      color: var(--txt-dim);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .result-row:last-of-type, .range-compare:last-of-type { border-bottom: none; }
+
+    .result-row strong, .range-compare strong {
+      font-family: 'VT323', monospace;
+      font-size: 19px;
+      color: var(--azul);
+      text-transform: none;
+      letter-spacing: 0;
     }
 
-    .range-compare .label { color: var(--text-sub); }
-
-    .note {
-      font-size: 12px;
-      margin-top: 8px;
-    }
-
-    .note.warn { color: var(--warn); }
-    .note.error { color: var(--error); }
+    .note { font-family: 'Oswald', sans-serif; font-size: 12px; margin-top: 8px; min-height: 14px; }
+    .note.error { color: var(--rojo); font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <header>
-    <a class="back" href="/index.html">← Villegas Online</a>
-    <h1>Leapmotor B10</h1>
-    <p class="subtitle">Batería y autonomía</p>
+  <header class="app-header">
+    <div>
+      <div class="hdr-title">LEAPMOTOR B10</div>
+      <div class="hdr-sub">Batería y autonomía</div>
+    </div>
+    <a class="hdr-back" href="/index.html">← Volver</a>
   </header>
 
   <main>
 
     <section class="card" id="sec-coche">
-      <h2>Datos del coche</h2>
+      <h2 class="card-title">Datos del coche</h2>
 
-      <div class="radio-row">
-        <label><input type="radio" id="version55" name="version" value="55" /> 55 kWh</label>
-        <label><input type="radio" id="version65" name="version" value="65" checked /> 65 kWh</label>
+      <div class="seg-tabs">
+        <label class="seg-tab"><input type="radio" id="version55" name="version" value="55" /> 55 kWh</label>
+        <label class="seg-tab"><input type="radio" id="version65" name="version" value="65" checked /> 65 kWh</label>
       </div>
 
       <label for="capInput">Capacidad útil (kWh)</label>
@@ -157,7 +224,7 @@
     </section>
 
     <section class="card" id="sec-carga">
-      <h2>Carga</h2>
+      <h2 class="card-title">Carga</h2>
 
       <label for="curPctInput">Batería actual (%)</label>
       <input type="number" id="curPctInput" min="0" max="100" step="1" value="20" />
@@ -165,9 +232,9 @@
       <label for="tgtPctInput">Batería objetivo (%)</label>
       <input type="number" id="tgtPctInput" min="0" max="100" step="1" value="80" />
 
-      <div class="radio-row">
-        <label><input type="radio" id="chargeTypeAC" name="chargeType" value="AC" checked /> AC (hasta 11 kW)</label>
-        <label><input type="radio" id="chargeTypeDC" name="chargeType" value="DC" /> DC rápida</label>
+      <div class="seg-tabs">
+        <label class="seg-tab"><input type="radio" id="chargeTypeAC" name="chargeType" value="AC" checked /> AC (≤11 kW)</label>
+        <label class="seg-tab"><input type="radio" id="chargeTypeDC" name="chargeType" value="DC" /> DC rápida</label>
       </div>
 
       <label for="chargerKwInput">Potencia del punto de carga (kW)</label>
@@ -176,34 +243,38 @@
       <label for="priceInput">Precio de la luz (€/kWh) — opcional</label>
       <input type="number" id="priceInput" min="0" step="0.01" placeholder="ej. 0.15" />
 
+      <div class="hero-result">
+        <div class="hero-label">Tiempo estimado de carga</div>
+        <div class="hero-value" id="resTime">—</div>
+        <div class="hero-sub" id="resWarning"></div>
+      </div>
+
       <div class="results">
         <div class="result-row"><span>Energía a cargar</span><strong id="resEnergy">—</strong></div>
         <div class="result-row"><span>Potencia efectiva</span><strong id="resPower">—</strong></div>
-        <div class="result-row"><span>Tiempo estimado</span><strong id="resTime">—</strong></div>
         <div class="result-row"><span>Coste de la carga</span><strong id="resCost">—</strong></div>
-        <p class="note warn" id="resWarning"></p>
-        <p class="note error" id="resError"></p>
       </div>
+      <p class="note error" id="resError"></p>
     </section>
 
     <section class="card" id="sec-autonomia">
-      <h2>Autonomía</h2>
+      <h2 class="card-title">Autonomía</h2>
 
       <label for="consRealInput">Consumo real (kWh/100km)</label>
       <input type="number" id="consRealInput" min="0.1" step="0.1" value="17.3" />
 
       <div class="results">
         <div class="range-compare">
-          <span class="label">Autonomía actual — WLTP</span><strong id="rangeCurWltp">—</strong>
+          <span>Actual — WLTP</span><strong id="rangeCurWltp">—</strong>
         </div>
         <div class="range-compare">
-          <span class="label">Autonomía actual — real</span><strong id="rangeCurReal">—</strong>
+          <span>Actual — real</span><strong id="rangeCurReal">—</strong>
         </div>
         <div class="range-compare">
-          <span class="label">Autonomía objetivo — WLTP</span><strong id="rangeTgtWltp">—</strong>
+          <span>Objetivo — WLTP</span><strong id="rangeTgtWltp">—</strong>
         </div>
         <div class="range-compare">
-          <span class="label">Autonomía objetivo — real</span><strong id="rangeTgtReal">—</strong>
+          <span>Objetivo — real</span><strong id="rangeTgtReal">—</strong>
         </div>
       </div>
     </section>
