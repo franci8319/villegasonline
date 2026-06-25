@@ -279,6 +279,16 @@
       </div>
     </section>
 
+    <section class="card" id="sec-coste">
+      <h2 class="card-title">Coste</h2>
+
+      <div class="results">
+        <div class="result-row"><span>Batería completa (0→100%)</span><strong id="resCostFull">—</strong></div>
+        <div class="result-row"><span>100 km — WLTP</span><strong id="resCost100Wltp">—</strong></div>
+        <div class="result-row"><span>100 km — real</span><strong id="resCost100Real">—</strong></div>
+      </div>
+    </section>
+
   </main>
 
   <script>
@@ -352,6 +362,16 @@
       const price = parseFloat(el('priceInput').value);
       const chargeType = el('chargeTypeAC').checked ? 'AC' : 'DC';
       const version = currentVersion();
+
+      if (price > 0) {
+        el('resCostFull').textContent = `${formatNumber(chargeCost(capacity, price), 2)} €`;
+        el('resCost100Wltp').textContent = `${formatNumber(chargeCost(consWltp, price), 2)} €`;
+        el('resCost100Real').textContent = `${formatNumber(chargeCost(consReal, price), 2)} €`;
+      } else {
+        el('resCostFull').textContent = '—';
+        el('resCost100Wltp').textContent = '—';
+        el('resCost100Real').textContent = '—';
+      }
 
       if (!(tgtPct > curPct)) {
         el('resError').textContent = 'El objetivo debe ser mayor que el nivel actual.';
